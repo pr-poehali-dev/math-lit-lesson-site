@@ -1,14 +1,397 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import Icon from '@/components/ui/icon';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const Index = () => {
+interface Lesson {
+  id: number;
+  title: string;
+  subject: 'math' | 'literature';
+  level: string;
+  duration: string;
+  description: string;
+  videoUrl: string;
+}
+
+const lessons: Lesson[] = [
+  {
+    id: 1,
+    title: 'Квадратные уравнения',
+    subject: 'math',
+    level: '8 класс',
+    duration: '45 мин',
+    description: 'Изучение методов решения квадратных уравнений через дискриминант',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+  {
+    id: 2,
+    title: 'Тригонометрия: основы',
+    subject: 'math',
+    level: '9 класс',
+    duration: '60 мин',
+    description: 'Синус, косинус, тангенс и их применение в решении задач',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+  {
+    id: 3,
+    title: 'А.С. Пушкин: Евгений Онегин',
+    subject: 'literature',
+    level: '9 класс',
+    duration: '90 мин',
+    description: 'Анализ романа в стихах, образы главных героев, проблематика произведения',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+  {
+    id: 4,
+    title: 'Производные функций',
+    subject: 'math',
+    level: '10 класс',
+    duration: '55 мин',
+    description: 'Понятие производной, правила дифференцирования',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+  {
+    id: 5,
+    title: 'Ф.М. Достоевский: Преступление и наказание',
+    subject: 'literature',
+    level: '10 класс',
+    duration: '120 мин',
+    description: 'Психологический анализ романа, философские идеи Раскольникова',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+  {
+    id: 6,
+    title: 'Серебряный век поэзии',
+    subject: 'literature',
+    level: '11 класс',
+    duration: '75 мин',
+    description: 'Символизм, акмеизм, футуризм. Основные представители и произведения',
+    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  }
+];
+
+export default function Index() {
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState<'all' | 'math' | 'literature'>('all');
+  const [videoQuality, setVideoQuality] = useState('720p');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const filteredLessons = lessons.filter(lesson => {
+    const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         lesson.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSubject = selectedSubject === 'all' || lesson.subject === selectedSubject;
+    return matchesSearch && matchesSubject;
+  });
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="border-b-2 border-border bg-card shadow-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary rounded-sm flex items-center justify-center">
+                <Icon name="GraduationCap" className="text-primary-foreground" size={28} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-primary">Академия Знаний</h1>
+                <p className="text-sm text-muted-foreground">Математика и литература</p>
+              </div>
+            </div>
+            <nav className="hidden md:flex gap-6">
+              <a href="#home" className="text-foreground hover:text-primary transition-colors font-semibold">Главная</a>
+              <a href="#lessons" className="text-foreground hover:text-primary transition-colors font-semibold">Уроки</a>
+              <a href="#profile" className="text-foreground hover:text-primary transition-colors font-semibold">Личный кабинет</a>
+              <a href="#contacts" className="text-foreground hover:text-primary transition-colors font-semibold">Контакты</a>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <section id="home" className="py-16 bg-gradient-to-b from-card to-background">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-5xl font-bold text-primary mb-6">Образование высшего качества</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Приобщитесь к знаниям через тщательно подготовленные видео-лекции 
+            по математике и литературе от опытных преподавателей
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button size="lg" className="font-semibold">
+              <Icon name="PlayCircle" className="mr-2" size={20} />
+              Начать обучение
+            </Button>
+            <Button size="lg" variant="outline" className="font-semibold">
+              <Icon name="BookOpen" className="mr-2" size={20} />
+              Каталог курсов
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-12 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="border-2 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center mb-3">
+                  <Icon name="Video" className="text-primary" size={24} />
+                </div>
+                <CardTitle className="text-xl">Качественное видео</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Лекции в высоком разрешении с возможностью выбора качества воспроизведения</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-secondary/10 rounded-sm flex items-center justify-center mb-3">
+                  <Icon name="Users" className="text-secondary" size={24} />
+                </div>
+                <CardTitle className="text-xl">Опытные педагоги</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Преподаватели с многолетним стажем и академическими достижениями</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 bg-accent/10 rounded-sm flex items-center justify-center mb-3">
+                  <Icon name="Award" className="text-accent" size={24} />
+                </div>
+                <CardTitle className="text-xl">Проверенная методика</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Образовательные программы, соответствующие академическим стандартам</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <section id="lessons" className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-primary mb-8">Каталог уроков</h2>
+          
+          <div className="max-w-4xl mx-auto mb-8">
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <Input
+                  placeholder="Поиск по урокам..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-2"
+                />
+              </div>
+              <Tabs value={selectedSubject} onValueChange={(v) => setSelectedSubject(v as any)} className="w-full md:w-auto">
+                <TabsList className="grid grid-cols-3 w-full md:w-[400px]">
+                  <TabsTrigger value="all">Все предметы</TabsTrigger>
+                  <TabsTrigger value="math">Математика</TabsTrigger>
+                  <TabsTrigger value="literature">Литература</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            
+            <div className="grid gap-4">
+              {filteredLessons.map(lesson => (
+                <Card key={lesson.id} className="border-2 hover:shadow-lg transition-all cursor-pointer" onClick={() => setSelectedLesson(lesson)}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-2xl mb-2">{lesson.title}</CardTitle>
+                        <CardDescription className="text-base">{lesson.description}</CardDescription>
+                      </div>
+                      <Badge variant={lesson.subject === 'math' ? 'default' : 'secondary'} className="ml-4">
+                        {lesson.subject === 'math' ? 'Математика' : 'Литература'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Icon name="GraduationCap" size={16} />
+                        <span>{lesson.level}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Clock" size={16} />
+                        <span>{lesson.duration}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-primary">
+                        <Icon name="Play" size={16} />
+                        <span className="font-semibold">Смотреть урок</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contacts" className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-primary mb-6">Свяжитесь с нами</h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Остались вопросы? Мы с радостью на них ответим
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card className="border-2">
+                <CardHeader>
+                  <Icon name="Mail" className="mx-auto text-primary mb-2" size={32} />
+                  <CardTitle className="text-lg">Email</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">info@academy.edu</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2">
+                <CardHeader>
+                  <Icon name="Phone" className="mx-auto text-primary mb-2" size={32} />
+                  <CardTitle className="text-lg">Телефон</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">+7 (495) 123-45-67</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2">
+                <CardHeader>
+                  <Icon name="MapPin" className="mx-auto text-primary mb-2" size={32} />
+                  <CardTitle className="text-lg">Адрес</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">г. Москва, ул. Знаний, д. 1</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card className="border-2 text-left">
+              <CardHeader>
+                <CardTitle>Напишите нам</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Input placeholder="Ваше имя" className="border-2" />
+                <Input type="email" placeholder="Email" className="border-2" />
+                <Input placeholder="Тема сообщения" className="border-2" />
+                <textarea 
+                  className="w-full min-h-[120px] rounded-md border-2 border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Ваше сообщение"
+                />
+                <Button className="w-full font-semibold">
+                  <Icon name="Send" className="mr-2" size={18} />
+                  Отправить сообщение
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t-2 border-border bg-card py-8">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <p className="mb-2">© 2024 Академия Знаний. Все права защищены.</p>
+          <p className="text-sm">Образование — ключ к успеху</p>
+        </div>
+      </footer>
+
+      <Dialog open={!!selectedLesson} onOpenChange={() => setSelectedLesson(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedLesson?.title}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedLesson && (
+            <div className="space-y-4">
+              <div className="flex gap-4 items-center">
+                <Badge variant={selectedLesson.subject === 'math' ? 'default' : 'secondary'}>
+                  {selectedLesson.subject === 'math' ? 'Математика' : 'Литература'}
+                </Badge>
+                <span className="text-sm text-muted-foreground">{selectedLesson.level}</span>
+                <span className="text-sm text-muted-foreground">{selectedLesson.duration}</span>
+              </div>
+              
+              <p className="text-muted-foreground">{selectedLesson.description}</p>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Видео-лекция</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">Качество:</span>
+                    <Select value={videoQuality} onValueChange={setVideoQuality}>
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="360p">360p</SelectItem>
+                        <SelectItem value="480p">480p</SelectItem>
+                        <SelectItem value="720p">720p HD</SelectItem>
+                        <SelectItem value="1080p">1080p Full HD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                  <iframe
+                    className="w-full h-full"
+                    src={selectedLesson.videoUrl}
+                    title={selectedLesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <Button 
+                    variant={isPlaying ? 'secondary' : 'default'}
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="flex-1"
+                  >
+                    <Icon name={isPlaying ? 'Pause' : 'Play'} className="mr-2" size={18} />
+                    {isPlaying ? 'Пауза' : 'Воспроизвести'}
+                  </Button>
+                  <Button variant="outline">
+                    <Icon name="Download" className="mr-2" size={18} />
+                    Скачать материалы
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <h4 className="font-semibold mb-3">Дополнительная информация</h4>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-primary" />
+                    <span>Конспект урока включен</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-primary" />
+                    <span>Практические задания</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-primary" />
+                    <span>Тестирование после урока</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-primary" />
+                    <span>Сертификат о прохождении</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Index;
+}
