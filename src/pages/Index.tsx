@@ -75,12 +75,34 @@ const lessons: Lesson[] = [
   }
 ];
 
+interface UserProgress {
+  lessonId: number;
+  completed: boolean;
+  progress: number;
+  lastWatched: string;
+}
+
 export default function Index() {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<'all' | 'math' | 'literature'>('all');
   const [videoQuality, setVideoQuality] = useState('720p');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [userProgress, setUserProgress] = useState<UserProgress[]>([
+    { lessonId: 1, completed: true, progress: 100, lastWatched: '2024-01-15' },
+    { lessonId: 2, completed: false, progress: 60, lastWatched: '2024-01-16' },
+    { lessonId: 3, completed: true, progress: 100, lastWatched: '2024-01-14' },
+    { lessonId: 4, completed: false, progress: 30, lastWatched: '2024-01-17' },
+  ]);
+  
+  const userData = {
+    name: 'Иван Петров',
+    email: 'ivan.petrov@example.com',
+    level: '10 класс',
+    joinDate: '2024-01-01',
+    avatar: 'ИП'
+  };
 
   const filteredLessons = lessons.filter(lesson => {
     const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,11 +125,14 @@ export default function Index() {
                 <p className="text-sm text-muted-foreground">Математика и литература</p>
               </div>
             </div>
-            <nav className="hidden md:flex gap-6">
+            <nav className="hidden md:flex gap-6 items-center">
               <a href="#home" className="text-foreground hover:text-primary transition-colors font-semibold">Главная</a>
               <a href="#lessons" className="text-foreground hover:text-primary transition-colors font-semibold">Уроки</a>
-              <a href="#profile" className="text-foreground hover:text-primary transition-colors font-semibold">Личный кабинет</a>
+              <button onClick={() => setShowProfile(true)} className="text-foreground hover:text-primary transition-colors font-semibold">Личный кабинет</button>
               <a href="#contacts" className="text-foreground hover:text-primary transition-colors font-semibold">Контакты</a>
+              <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-secondary-foreground font-bold cursor-pointer" onClick={() => setShowProfile(true)}>
+                {userData.avatar}
+              </div>
             </nav>
           </div>
         </div>
@@ -303,6 +328,156 @@ export default function Index() {
           <p className="text-sm">Образование — ключ к успеху</p>
         </div>
       </footer>
+
+      <Dialog open={showProfile} onOpenChange={() => setShowProfile(false)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="flex items-start gap-6 pb-6 border-b">
+              <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-secondary-foreground text-3xl font-bold">
+                {userData.avatar}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-2">{userData.name}</h3>
+                <p className="text-muted-foreground mb-1">{userData.email}</p>
+                <div className="flex gap-4 text-sm">
+                  <Badge variant="outline">{userData.level}</Badge>
+                  <span className="text-muted-foreground">Дата регистрации: {new Date(userData.joinDate).toLocaleDateString('ru-RU')}</span>
+                </div>
+              </div>
+              <Button variant="outline">
+                <Icon name="Settings" className="mr-2" size={18} />
+                Настройки
+              </Button>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Пройдено уроков</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-primary">{userProgress.filter(p => p.completed).length}</p>
+                  <p className="text-sm text-muted-foreground">из {lessons.length} доступных</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Общий прогресс</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-secondary">
+                    {Math.round((userProgress.reduce((acc, p) => acc + p.progress, 0) / (lessons.length * 100)) * 100)}%
+                  </p>
+                  <p className="text-sm text-muted-foreground">выполнено</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Активность</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-accent">12</p>
+                  <p className="text-sm text-muted-foreground">дней подряд</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-bold mb-4">Мой прогресс по урокам</h3>
+              <div className="space-y-3">
+                {lessons.map(lesson => {
+                  const progress = userProgress.find(p => p.lessonId === lesson.id);
+                  const progressPercent = progress?.progress || 0;
+                  const isCompleted = progress?.completed || false;
+                  
+                  return (
+                    <Card key={lesson.id} className="border-2">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg mb-1">{lesson.title}</CardTitle>
+                            <CardDescription>{lesson.subject === 'math' ? 'Математика' : 'Литература'} • {lesson.level}</CardDescription>
+                          </div>
+                          {isCompleted && (
+                            <Badge className="bg-green-600">
+                              <Icon name="CheckCircle" size={14} className="mr-1" />
+                              Пройден
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Прогресс</span>
+                            <span className="font-semibold">{progressPercent}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: `${progressPercent}%` }}
+                            />
+                          </div>
+                          {progress && (
+                            <p className="text-xs text-muted-foreground">Последний просмотр: {new Date(progress.lastWatched).toLocaleDateString('ru-RU')}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-bold mb-4">Достижения</h3>
+              <div className="grid md:grid-cols-4 gap-4">
+                <Card className="border-2 text-center">
+                  <CardHeader>
+                    <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Icon name="Award" size={32} className="text-accent" />
+                    </div>
+                    <CardTitle className="text-sm">Первый урок</CardTitle>
+                  </CardHeader>
+                </Card>
+                
+                <Card className="border-2 text-center">
+                  <CardHeader>
+                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Icon name="Flame" size={32} className="text-primary" />
+                    </div>
+                    <CardTitle className="text-sm">Неделя подряд</CardTitle>
+                  </CardHeader>
+                </Card>
+                
+                <Card className="border-2 text-center opacity-50">
+                  <CardHeader>
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Icon name="Star" size={32} className="text-muted-foreground" />
+                    </div>
+                    <CardTitle className="text-sm">Все уроки</CardTitle>
+                  </CardHeader>
+                </Card>
+                
+                <Card className="border-2 text-center opacity-50">
+                  <CardHeader>
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Icon name="Trophy" size={32} className="text-muted-foreground" />
+                    </div>
+                    <CardTitle className="text-sm">Отличник</CardTitle>
+                  </CardHeader>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!selectedLesson} onOpenChange={() => setSelectedLesson(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
